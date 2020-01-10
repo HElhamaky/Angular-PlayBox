@@ -273,3 +273,306 @@ background: #f3f3f3;
 ```
 
 * All right, we’ve created the **base app scaffolding** using the CLI, seen the **App component**, **App module**, and **bootstrap logic**, and found the **markup** that renders out the component. **Congratulations**, you’ve made your first Angular app!
+
+# Building services
+
+* Services are objects that abstract some common logic that you plan to reuse in multiple places.
+* They can do about anything you need them to do, because they’re objects.
+* Using ES2015 modules, these classes are exported, and so any component can import them as necessary. 
+* They could also have functions or even static values, like a string or number, as a way to share data between various parts of your application.
+* Another way to think of services is as sharable objects that any part of your app can import as needed. 
+* They’re able to abstract some logic or data (such as the logic necessary to load some data from a source), so it’s easy to use inside of any component.
+* Although services will often help manage data, they’re not restricted to any particular job.
+* The intention of a service is to enable reuse of code. 
+* A service might be a set of common methods that need to be shared. 
+* You could have various “helper methods” that you don’t want to write over and over, such as utilities to parse data formats or authentication logic that needs to be run in multiple places.
+* In the app, you’ll want to have a list of the stocks for both the dashboard and manage pages to use. 
+* This is a perfect scenario of when to use a service to help manage the data and share it across different components.
+* The CLI gives us a nice way to create a service that has the scaffolding we need to get started. It will generate a simple service and a test stub for that service, as well. 
+To generate a service, you run the following:
+        ng generate service services/stocks
+* The CLI will generate the files in the **src/app/services** directory. 
+* It contains the most basic service, which does nothing. 
+* The Stocks service will have an array that contains a list of the stock symbols and expose a set of methods to retrieve or modify the list of stocks.
+
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+//Declares a stock array and API variables
+let stocks: Array<string> = ['AAPL', 'GOOG', 'FB', 'AMZN', 'TWTR'];
+let service: string = 'https://angular2-in-action-api.herokuapp.com';
+
+
+//Defines and exports the TypeScript interface for a stock object
+export interface StockInterface {
+  symbol: string;
+  lastTradePriceOnly: number;
+  change: number;
+  changeInPercent: number;
+}
+
+// Annotates with Injectable to wire up dependency injection
+@Injectable()
+export class StocksService {
+  
+  //Constructor method to inject HttpClient service into class http property
+  constructor(private http: HttpClient) {}
+
+    //Method to get the stocks
+      get() {
+      return stocks.slice();
+      }
+      
+      //Method to add a new stock to list
+      add(stock) {
+      stocks.push(stock);
+      return this.get();
+      }
+
+      //Method to remove a stock from list
+      remove(stock) {
+      stocks.splice(stocks.indexOf(stock), 1);
+      return this.get();
+      }
+
+      //Method to call HttpClient service to load stock values from API
+      load(symbols) {
+      if (symbols) {
+      return this.http.get<Array<StockInterface>>(service + '/stocks/snapshot?symbols=' + symbols.join());
+    }}
+  }
+
+```
+1. The service first needs to **import its dependencies**; one is the **decorator for a service**, and the other is the **HttpClient service**. 
+* Then it **declares two variables**; one is to **track the list of stock symbols**, and the other is the **API endpoint URL**.
+* Then the **StockInterface interface** is defined and exported for other components to use. 
+    * This provides a TypeScript definition of what a *stock object should contain*, which is used by TypeScript to ensure the use of the data remains **consistent**. 
+    * We’ll use this later to ensure that we’re *typing our stock objects correctly* when they’re used.
+* The StocksService class is **exported and is decorated** by the Injectable decorator.
+    * The decorator is used to *set up the proper wiring* for Angular to know how to use it elsewhere, so if you forget to include the decorator, the class might not be injectable into your application.
+* In the **constructor method**, the **HttpClient service is injected** using the TypeScript technique of **declaring a private variable called *http* and then giving it a type of HttpClient**. 
+    * Angular can *inspect the type definition* and determine how to inject the requested object into the class. 
+    * If you’re new to TypeScript, keep in mind that anytime you see a colon after a variable declaration, you’re *defining the object type* that should be assigned to that variable.
+* The service contains **four methods**. 
+    * The **get()**method is a simple method that **returns the current value of the stocks array**, but it always **returns a copy** instead of the direct value. This is done to encapsulate the stock values and prevent them from being directly modified. 
+    * The **add()**method **adds a new item to the stocks array** and returns the newly modified value.  
+    * The **remove()** method will **drop an item from the stocks array**.
+    * Finally, the **load()** method makes a call to the **HttpClient service** to load the data for **current stock price values**. 
+* The **HttpClient service** is called and **returns an observable**,which is a construct for handling **asynchronous events**, such as data from an API call. 
+* There is a little **feature** of the HttpClient that appears as part of the **get()** method
+and is put between two angle brackets:
+```typescript
+        this.http.get<Array<StockInterface>>(...
+```
+* This is known as a **type variable**, which is a feature of TypeScript that allows you to **tell the http.get() method what type of object it should expect**, and in this case it will expect to get an array of objects that conform to the **StockInterface** (our stock objects). 
+    * This is optional, but it’s very helpful to alert the compiler if you try to access properties that don’t exist.
+* There’s one more step we have to do, because the **CLI doesn’t automatically register the service** with the App module, and we need to **register HttpClient** with the application as well.
+    * Open the **src/app/app.module.ts** file and near the top add these two imports:
+```typescript
+import { HttpClientModule } from '@angular/common/http';
+import { StocksService } from './services/stocks.service';
+```
+* This will import the Stocks service and HttpClientModule into the file, but we need to register the HttpClientModule with the application. Find the imports section as defined in the NgModule, and update it like you see here to include the HttpClientModule: 
+```typescript
+imports: [
+BrowserModule,
+HttpClientModule
+],
+```
+* Now we need to register the new StocksService with the providers property to
+inform Angular that it should be made available for the module to use:
+```typescript
+providers: [StocksService],
+```
+* Your service is wired up and ready to consume, but we haven’t used it yet anywhere in our application. The next section looks at how to consume it.
+* This service is not too complex. It’s mostly designed to abstract the modification of the array so it’s not directly modified and load the data from the API. 
+* While the application runs, the stocks array can be modified, and changes are reflected in both the dashboard and manage components, as you’ll see shortly. Because it’s exported, it’s easily imported when needed.
+* Now you’ll create a component that uses some default directives and allow configurable properties to modify the component’s display.
+
+# Creating your first component
+* We’re going to create a component that **displays a basic summary card** of the stock price information.
+* This component will only **receive data to display from its parent component** and modify its own display based on that input value. 
+    * For example, a parent component will pass along the current data for a particular stock, and the Summary component will **use the daily change to determine whether the background should be green or red based on whether the stock went up or down**.
+* The key goals of this component are to do the following:
+    * Accept stock data and **display** it.
+    * **Change background color** depending on the day’s activity (green for increase, red for decrease).
+    * **Format values** for proper display, such as currency or percentage values and we’ll even wire it up to load the data from the API. 
+    * Eventually, we’ll instantiate **multiple copies** of this component to display a card for each of the stocks.
+* Obviously, when you run this the stock values will change based on the **latest data**, but
+you can see the card displaying the **current data**.
+* **Let’s dig into building this card and then we’ll walk through the individual parts of how it results in this output**. 
+* Go back to the terminal and run the following:
+```bash
+ng generate component components/summary
+```
+* The CLI will generate a new component inside the **src/app/components/summary**
+directory. 
+* We had to create the **src/app/components** directory first, because the **CLI doesn’t make new folders** for you automatically if they’re missing. This helps **organize** the components into a **single directory**, though you could choose to generate them elsewhere.
+* Now the **contents of the component** are pretty similar to how the App component appeared originally. 
+    * It contains 
+        * an empty CSS file, 
+        * basic HTML template, 
+        * test stub, 
+        * and empty class already initialized with the component annotation.
+* We’ll start by setting up the template for our component and then we’ll create the controller to manage it. 
+* Open the **src/app/components/summary/summary.component.html** file and replace the contents with what you see in the following listing.
+```html
+<div class="mdl-card stock-card mdl-shadow--2dp" [ngClass]="{increase:isPositive(), decrease:isNegative()}" style="width: 100%;">
+    <span>
+        <div class="mdl-card__title">
+            <h4 style="color: #fff; margin: 0">
+                {{stock?.symbol?.toUpperCase()}}
+                <br/>
+                {{stock?.lastTradePriceOnly | currency:'USD':'symbol':'.2'}}
+                <br/>
+                {{stock?.change | currency:'USD':'symbol':'.2'}} ({{stock?.changeInPercent|percent:'.2'}})
+            </h4>
+        </div>
+    </span>
+</div>
+```
+* The template contains some **markup to structure** the card like a **material design card**.
+* If we look at the first line, we see this snippet as an attribute on the **div** element:
+        [ngClass]="{increase: isPositive(), decrease: isNegative()}"
+* This is a **special kind of attribute called a directive**. 
+* **Directives** allow you to modify the behavior and display of DOM elements in a template. 
+* Think of them as **attributes** on HTML elements that cause the element to **change its behavior**, such as the **disabled attribute** that disables an HTML input element. 
+* Directives make it possible to **add some conditional logic** or otherwise modify the way the template **behaves or is rendered**.
+* The **NgClass** directive is able to **add or remove CSS classes** to and from the element.
+* It’s assigned a value, which is an object that contains properties that are the **CSS class
+names**, and those properties map to a method on the controller (to be written). 
+* **If the method returns true, it will add the class**; if false, it will be removed. 
+* In this snippet, **the card will get the increase CSS class when it’s positive**, or the **decrease CSS class when it’s negative**, for the day’s trading.
+* Angular has a **few directives built in**, and you’ll see a couple more in this chapter.
+* **Directives usually take an expression**, which is evaluated by Angular and passed to the directive. 
+* The expression might **evaluate to a Boolean** or other primitive value or **resolve to a function call** that would be run to return a value before the directive runs. 
+* Based on the value of the expression, the directive might do different things, such as **show or hide** whether the expression is **true or false**.
+* We saw an example of **interpolation** earlier, but we now have a more complex example
+that **displays the symbol of the stock**. 
+* The controller is expected to have a property called stock, which is an object with various values:
+        {{stock?.symbol?.toUpperCase()}}
+* The **double curly braces** syntax is the way to display some value in the page and it is called **interpolation**. 
+* The content **between the braces** is called an **Angular expression** and is evaluated against the controller (like the directive), meaning that **it will try to find a property on the controller** to display. 
+* **If it fails**, normally it will throw an **error**, but the **safe navigation** operator **?.** will **silently fail** and not display anything if the property is missing.
+* This block will display the stock symbol, but as `uppercase`. 
+* Most JavaScript expressions are valid Angular expressions, though some things are different, such as the safe navigation operator. 
+* The ability to call prototype methods like `toUpperCase()` remains, and that’s how it’s able to render the text **as uppercase**.
+* The next **interpolatio**n shows the last trade price and adds another feature called **pipes**, which are added directly into the expression **to format the output**.
+* The **interpolationexpression** is extended with a **pipe symbol**, |, and then a pipe is named and **optionally configured with values separated with the colon : symbol**. 
+* The price value comes back as a **normal float** (like `111.8`), which is not the same format as currency, which should appear like `$111.80`:
+        {{stock?.lastTradePriceOnly | currency:'USD':'symbol':'.2'}}
+* **Pipes only modify the data before it is displayed**, and **do not change the value** in the controller. 
+* In this code, the double **curly braces** indicate that you want to **bind the data stored in the stock.lastTradePriceOnly property to display it**. 
+* The data is piped through the **Currency pipe**, which **converts the value into a financial figure** based on a **`USD` figure**, and **rounds to two decimal points**. 
+* Now let’s look at the next line:
+        {{stock?.change | currency:'USD':'symbol':'.2'}} ({{stock?.changeInPercent | percent:'.2'}})
+* The next line also has **two different interpolation** bindings with a **Currency or Percentage** pipe. 
+* The **first will convert to the same currency format**, but the second will **take a percentage as a decimal, such as `0.06`, and turn it into `6%`**. 
+* The Angular documentation can detail all the options available and how to use them for each pipe.
+* This template doesn’t work in isolation; it requires a controller to wire up the data and the methods. 
+* Let’s open the **src/app/components/summary/summary.component.ts** file and replace the code, as you see in the following listing.
+
+```typescript
+import { Component, Input } from '@angular/core';
+//Declares the component metadata
+@Component({
+selector: 'summary',
+styleUrls: ['./summary.component.css'],
+templateUrl: './summary.component.html'
+})
+
+//Exports the Summary component class
+export class SummaryComponent {
+    //Declares a property that is an input value
+    @Input() stock: any;
+    //Method to check if stock is negative                           
+    isNegative() {
+    return (this.stock && this.stock.change < 0);
+    }
+    //Method to check if stock is positive                           
+    isPositive() {
+    return (this.stock && this.stock.change > 0);
+    }
+}
+```
+* This controller **imports dependencies**, which is almost always the **first block** of any file written in TypeScript. 
+The component **metadata** describes the **selector**, **linked styles**, and **linked template files** that comprise the component. We’ll add some CSS to the styles in a moment.
+* The summary **controller class** starts with a **property** called *stock*, which is preceded with the **Input annotation**. 
+* This indicates that **this property is to be provided to the component by a parent component** passing it to the summary. 
+* Properties are bound to an element using an **attribute**, as you can see here—this example will set the value of **stockData** of the parent component in the **stock property** of the Summary component:
+        <summary [stock]="stockData"></summary>
+* Because input is passed through a binding attribute, it will **evaluate the expression** and pass it into that property for the **Summary component** to consume. 
+* Angular expressions behave the same anytime there’s a binding. They **try to find a corresponding value in the controller to bind to the property**.
+* Lastly, there are the two methods for **checking** whether the **stock value** is positive or negative. 
+* The stock could also be neutral, so that’s the default state, and only if the stock changes will one of the methods return true. 
+* These methods are used by the `NgClass` directive to determine whether it should **add a particular CSS class**, as described earlier in the template.
+* The final piece we want to add are the CSS classes themselves. 
+* Angular has some interesting ways to **encapsulate CSS styles** so they only apply to a single component.
+We’ll dig into the specifics later, but open the **src/app/components/summary/summary.component.css** file and add the styles, as shown in the following listing.
+```css
+:host .stock-card {
+background: #333333;
+}
+:host .stock-card.increase {
+background: #558B2F;
+color: #fff;
+}
+:host .stock-card.decrease {
+background: #C62828;
+color: #fff;
+}
+```
+* This is typical CSS, though you may not have seen or used the :host selector in the past. 
+* Because components need to be as self-contained as possible, they rely on the Shadow DOM concepts discussed in chapter 1. 
+* When Angular renders this component, it will modify the output to ensure that the CSS selector is unique and doesn’t accidentally interfere with other elements on the page. 
+* This behavior is configurable, but that will be covered later.
+* The **host selector** is a way to specify that you want the styles to **apply to the element that hosts the element**, so in this case it will look at the **Summary component element itself** rather than the contents inside it. 
+* The primary purpose of the CSS here is to establish the **Summary component background color**.
+* We’ve walked through the Summary component generation and built out a functional component. 
+* Let’s quickly use it to get a glimpse of how it behaves.
+* Look at the **src/app/app.module.ts** file and you’ll see that the CLI already modified the module to include the Summary component in the App module. 
+    * There’s nothing to do here, but I wanted to point it out.
+* Now look at **src/app/app.component.ts** and update it to the contents of the following listing. 
+    * This will include the **Stocks service** and use it to **store the stock data onto a property**. We’ll then use this to **display the summary card**.
+
+```typescript
+import { Component } from '@angular/core';
+import { StocksService, StockInterface } from './services/stocks.service';
+
+@Component({
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css']
+})
+
+export class AppComponent {
+    //Declares a property of an array of stocks
+    stocks: Array<StockInterface>;
+    constructor(service: StocksService) {
+            service.load(['AAPL']).subscribe(stocks => {
+            //When the data loads, it will store it on the stocks property
+            this.stocks = stocks;                                                    
+            });
+    }
+}
+```
+* Here we **store the loaded stock data onto a property called stocks**. 
+* We also **provide some typing information**, which is imported from our Stocks service, so that TypeScript knows **what kind of value to expect**. 
+* Finally, instead of logging the data to the console, we **store it on the stocks property**.
+* Now we’ll need to update the **src/app/app.component.html** file to use the Summary component. 
+* Here is the snippet you need to **update** from the template:
+
+```html
+<main class="mdl-layout__content" style="padding: 20px;" *ngIf="stocks">
+    <summary [stock]="stocks[0]"></summary>
+</main>
+```
+* The first line added `*ngIf="stocks"`, which is a directive that will **only render** the contents inside the element **when the expression is true**. 
+* In this case, **it won’t render** the Summary component **until the stock data has been loaded**.
+* The middle line shows the **instantiation of a single Summary component**, and the first value of the stocks array is bound into the stock property. 
+* The **data returns as an array**, so we’re directly accessing the first value. 
+* Recall the **input value** we declared in the Summary component, which is also named stock.
+* Once you save this and run the app, it should finally display a single summary card with the current stock data for Apple’s stock. 
+* We’ve made our first component and displayed it inside our application!
+* Next you’ll create another component and use it together with the Summary component to create the dashboard that displays the list of stocks and their current statuses.
