@@ -683,3 +683,119 @@ The expression contains `let stock of stocks`, which means that it will **loop o
 * When you run the application now, you should see the five default stocks appearing as separate cards in the page. 
 * The grid layout should lay them out in four columns.
 * Next you’ll build a new component that has a form that manages the list of stock symbols to use when displaying the stocks.
+
+## Components with forms and events
+* We want to manage the stocks that are displayed, so we’ll need to add another component that has a form to edit the list of stocks. 
+* This form will allow users to input new stock symbols to add to the list and will have a list of the current stocks with a button that will remove a stock from the list. 
+* This list of stocks is shared throughout the entire application, so any changes will replicate elsewhere.
+* Forms are essential in applications, and Angular comes with built-in support for building complex forms with many features. 
+* Forms in Angular are comprised of any number of controls, which are the various types of inputs and fields the form may contain (such as a text input, a checkbox, or some custom element).
+* Let’s start by generating a new component for the manage view. Using the CLI, run the following command, and remember, this will also automatically register the component with the App module so it’s ready to consume: `ng generate component components/manage`
+* Now update the src/app/app.component.html file and change the content of the main element, as you see in the following code, so the Manage component will display in the application. Then when you run the application, it will display the default message you see with any new component:
+```html
+<main class="mdl-layout__content" style="padding: 20px;">
+<manage></manage>
+</main>
+```
+* We also need to add the FormsModule to our application, because we are going to use the form features that aren’t automatically included by Angular. 
+* Open up the **src/app/app.module.ts** file and add a new import:
+`import { FormsModule } from '@angular/forms';`
+
+Then update the imports definition of the module to declare the FormsModule like you see here:
+```typescript
+imports: [
+BrowserModule,
+HttpClientModule,
+FormsModule,
+],
+```
+* Let’s start making our Manage component by updating the controller with some logic.
+* There will also need to be two methods: one to handle the removal of a stock and another to add a new stock symbol to the list. 
+* Open **src/app/components/manage/manage.component.ts** and update it to match the following listing. This will comprise the additional methods and setup required for this view.
+
+```typescript
+import { Component } from '@angular/core';
+import { StocksService } from '../../services/stocks.service';
+
+@Component({
+    selector: 'manage',
+    templateUrl: './manage.component.html',
+    styleUrls: ['./manage.component.css']
+})
+
+export class ManageComponent {
+    //Defines class and two properties for storing the array of symbols and a string for input
+    symbols: Array<string>;
+    stock: string;
+    //Gets the current list of symbols during class instantiation
+    constructor(private service: StocksService) {
+    this.symbols = service.get();
+    }
+    //Method to add a new stock to the list
+    add() {
+    this.symbols = this.service.add(this.stock.toUpperCase());
+    this.stock = '';
+    }
+    //Method to remove a stock symbol from the list
+    remove(symbol) {
+    this.symbols = this.service.remove(symbol);
+    }
+}
+```
+* As usual, we start by importing dependencies for the component. 
+* Then the component metadata is declared using the `@Component` annotation. 
+* The class object is then declared, which contains two properties: 
+    * the first is the array of symbols that’s retrieved from the Stocks service, 
+*     * and the second is a property to hold the value of the input.
+* We’ll see how the stock property is linked to the input field in the template, but this is where it’s first defined.
+* The constructor uses the service to get the array of stock symbols and store it on the symbols property. This doesn’t require the `OnInit` lifecycle hook, because it’s a synchronous request to get data that exists in memory.
+* Then we have the two methods to add or remove the symbols from the list. 
+* The service always returns a copy of the stocks symbol array, so we have to use the service methods to manage the list (which is encapsulated inside the service and isn’t directly modifiable). 
+* The `add` method will add a new item to the list of symbols, and then store the modified list onto the symbols list. Conversely, the `remove` method will remove the item from the array and refresh the symbols list in the controller.
+* This controller satisfies our needs for handling the actions of the form, but now we need to create the template to display the form and its contents. 
+* Open **src/app/components/manage/manage.component.html** and add the contents from the following listing.
+
+```html
+<div class="mdl-grid">
+    <div class="mdl-cell mdl-cell--4-col"></div>
+        <div class="mdl-cell mdl-cell--4-col">
+            
+            <form style="margin-bottom: 5px;" (submit)="add()">
+            <input name="stock" [(ngModel)]="stock" class="mdl-textfield__input"
+            type="text" placeholder="Add Stock" />
+            </form>
+            
+            <table class="mdl-data-table mdl-data-table--selectable mdl-shadow--2dp"
+            style="width: 100%;">
+                <tbody>
+                <tr *ngFor="let symbol of symbols">
+                    <td class="mdl-data-table__cell--non-numeric">{{symbol}}</td>
+                    <td style="padding-top: 6px;">
+                    <button class="mdl-button" (click)="remove(symbol)">
+                    Remove</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mdl-cell mdl-cell--4-col"></div>
+</div>
+```
+
+* In this template there’s a decent amount of markup only for the grid layout. Any class that starts with `mdl-` is part of the styles provided by Material Design Lite’s grid and UI library. 
+* The first interesting section is the form, which has a new type of attribute we haven’t seen before.
+* The `(submit)="add()"` attribute is a way to add an event listener, known as an **event binding**. 
+* When the form is submitted (which is done by pressing Enter), it will call the add method. 
+* Any attribute that’s surrounded by parentheses is an event binding, and the name of the event should match the event without the on (onsubmit is submit). 
+* The form contains a single input element, which has another new type of attribute. 
+* The `[(ngModel)]="stock"` attribute is a two-way binding that will sync the value of the input and the value of the property in the controller anytime it changes from either location. 
+* This way, as the user types into the text field, the value will be immediately available for the controller to consume. 
+* When the user hits Enter, the submit event fires and will use the value of the stock property when adding the new symbol. 
+* I cover form concepts in greater detail later, but this is your first preview of how a simple form is constructed.
+* The next section loops over the list of symbols using NgFor. 
+* I covered how this works earlier, so I won’t go into detail. For each symbol, it will create a local variable called symbol, create a new table row that binds the value, and a button that’s for removing the item. 
+* The remove button contains another event binding, this one to handle the click event. 
+* The `(click)="remove(symbol)"` attribute adds an event listener to the click event and will call the remove method in the controller, passing along the symbol. 
+* Because there are multiple instances of the button, each one passes along the local variable to know which symbol to remove. 
+* The last task is to add routing to the application to activate routes for the two views to act like two different pages.
