@@ -678,30 +678,32 @@ export class DashboardComponent implements OnInit {
 The expression contains `let stock of stocks`, which means that it will **loop over each of the items in the stocks array** and expose a local variable by the name of stock.
 * Again, this is the same kind of behavior that you would see in a JavaScript for loop, but applied in the context of HTML elements.
 * `NgFor` will then create an instance of the Summary component for each of the stock items. 
-* It binds the stock data into the component. Each copy of the Summary component is distinct from the others, and they don’t directly share data.
+* It binds the stock data into the component. 
+* Each copy of the Summary component is **distinct** from the others, and they **don’t directly share** data.
 * You’ve now completed the dashboard view, which uses a service and another component to render the experience. 
-* When you run the application now, you should see the five default stocks appearing as separate cards in the page. 
+* When you **run** the application now, you should see the five default stocks appearing as separate cards in the page. 
 * The grid layout should lay them out in four columns.
 * Next you’ll build a new component that has a form that manages the list of stock symbols to use when displaying the stocks.
 
 ## Components with forms and events
-* We want to manage the stocks that are displayed, so we’ll need to add another component that has a form to edit the list of stocks. 
-* This form will allow users to input new stock symbols to add to the list and will have a list of the current stocks with a button that will remove a stock from the list. 
-* This list of stocks is shared throughout the entire application, so any changes will replicate elsewhere.
+* We want to **manage the stocks** that are displayed, so we’ll need to add another component that has a **form to edit the list of stocks**. 
+* This form will allow users to **input new stock symbols** to add to the list and will have a list of the **current stocks** with a button that will **remove a stock** from the list. 
+* This list of stocks is shared throughout the entire application, so any **changes will replicate** elsewhere.
 * Forms are essential in applications, and Angular comes with built-in support for building complex forms with many features. 
-* Forms in Angular are comprised of any number of controls, which are the various types of inputs and fields the form may contain (such as a text input, a checkbox, or some custom element).
-* Let’s start by generating a new component for the manage view. Using the CLI, run the following command, and remember, this will also automatically register the component with the App module so it’s ready to consume: `ng generate component components/manage`
-* Now update the src/app/app.component.html file and change the content of the main element, as you see in the following code, so the Manage component will display in the application. Then when you run the application, it will display the default message you see with any new component:
+* Forms in Angular are comprised of **any number of controls**, which are the various types of inputs and fields the form may contain (such as a *text input*, a *checkbox*, or some custom element).
+* Let’s start by **generating a new component** for the manage view. 
+* Using the CLI, run the following command, and remember, this will also automatically register the component with the App module so it’s ready to consume: `ng generate component components/manage`
+* Now update the **src/app/app.component.html** file and change the content of the main element, as you see in the following code, so the Manage component will display in the application. 
+* Then when you run the application, it will display the **default message** you see with any new component:
 ```html
 <main class="mdl-layout__content" style="padding: 20px;">
 <manage></manage>
 </main>
 ```
-* We also need to add the FormsModule to our application, because we are going to use the form features that aren’t automatically included by Angular. 
+* We also need to add the `FormsModule` to our application, because we are going to use the **form features** that aren’t automatically included by Angular. 
 * Open up the **src/app/app.module.ts** file and add a new import:
 `import { FormsModule } from '@angular/forms';`
-
-Then update the imports definition of the module to declare the FormsModule like you see here:
+* Then update the imports definition of the module to declare the `FormsModule` like you see here:
 ```typescript
 imports: [
 BrowserModule,
@@ -709,9 +711,12 @@ HttpClientModule,
 FormsModule,
 ],
 ```
-* Let’s start making our Manage component by updating the controller with some logic.
-* There will also need to be two methods: one to handle the removal of a stock and another to add a new stock symbol to the list. 
-* Open **src/app/components/manage/manage.component.ts** and update it to match the following listing. This will comprise the additional methods and setup required for this view.
+* Let’s start making **our Manage component** by updating the controller with some logic.
+* There will also need to be two methods: 
+    * one to **handle the removal of a stock** 
+    * and another to **add a new stock symbol to the list**. 
+* Open **src/app/components/manage/manage.component.ts** and update it to match the following listing.
+* This will comprise the additional methods and setup required for this view.
 
 ```typescript
 import { Component } from '@angular/core';
@@ -742,17 +747,19 @@ export class ManageComponent {
     }
 }
 ```
-* As usual, we start by importing dependencies for the component. 
-* Then the component metadata is declared using the `@Component` annotation. 
-* The class object is then declared, which contains two properties: 
-    * the first is the array of symbols that’s retrieved from the Stocks service, 
-*     * and the second is a property to hold the value of the input.
-* We’ll see how the stock property is linked to the input field in the template, but this is where it’s first defined.
-* The constructor uses the service to get the array of stock symbols and store it on the symbols property. This doesn’t require the `OnInit` lifecycle hook, because it’s a synchronous request to get data that exists in memory.
-* Then we have the two methods to add or remove the symbols from the list. 
-* The service always returns a copy of the stocks symbol array, so we have to use the service methods to manage the list (which is encapsulated inside the service and isn’t directly modifiable). 
-* The `add` method will add a new item to the list of symbols, and then store the modified list onto the symbols list. Conversely, the `remove` method will remove the item from the array and refresh the symbols list in the controller.
-* This controller satisfies our needs for handling the actions of the form, but now we need to create the template to display the form and its contents. 
+* As usual, we start by **importing dependencies** for the component. 
+* Then the **component metadata** is declared using the `@Component` annotation. 
+* The **class object** is then declared, which contains **two properties**: 
+    * the first is the **array of symbols** that’s retrieved *from* the **Stocks service**, 
+    * and the second is a property to **hold the value of the input**.
+* We’ll see how the **stock property** is linked to the input field in the template, but this is where it’s first defined.
+* The **constructor uses the service** to get the array of stock symbols and **store** it on the **symbols property**. 
+* This doesn’t require the `OnInit` lifecycle hook, because it’s a **synchronous request** to get data that exists in memory.
+* Then we have the two methods to **add** or **remove** the symbols from the list. 
+* The **service always returns a copy of the stocks symbol array**, so we have to use the service methods to manage the list (which is encapsulated inside the service and isn’t directly modifiable). 
+    * The `add` method will **add a new item to the list of symbols**, and then **store the modified list onto the symbols list**. 
+    * Conversely, the `remove` method will **remove the item from the array** and **refresh the symbols list in the controller**.
+* This controller satisfies our needs for **handling the actions of the form**, but now we need to create the template to display the form and its contents. 
 * Open **src/app/components/manage/manage.component.html** and add the contents from the following listing.
 
 ```html
@@ -783,19 +790,107 @@ export class ManageComponent {
 </div>
 ```
 
-* In this template there’s a decent amount of markup only for the grid layout. Any class that starts with `mdl-` is part of the styles provided by Material Design Lite’s grid and UI library. 
+* In this template there’s a decent amount of markup only for the grid layout. 
+* Any class that starts with `mdl-` is part of the styles provided by *Material Design Lite’s grid* and *UI library*. 
 * The first interesting section is the form, which has a new type of attribute we haven’t seen before.
-* The `(submit)="add()"` attribute is a way to add an event listener, known as an **event binding**. 
-* When the form is submitted (which is done by pressing Enter), it will call the add method. 
-* Any attribute that’s surrounded by parentheses is an event binding, and the name of the event should match the event without the on (onsubmit is submit). 
+* The `(submit)="add()"` attribute is a **way to add an event listener**, known as an **event binding**. 
+* When the **form is submitted** (which is done by pressing **Enter**), it will **call the add method**. 
+* **Any attribute that’s surrounded by parentheses is an event binding**, and the **name of the event should match the event** without the on (onsubmit is submit). 
 * The form contains a single input element, which has another new type of attribute. 
-* The `[(ngModel)]="stock"` attribute is a two-way binding that will sync the value of the input and the value of the property in the controller anytime it changes from either location. 
+* The `[(ngModel)]="stock"` attribute is a **two-way binding that will sync the value of the input and the value of the property in the controller** anytime it changes from either location. 
 * This way, as the user types into the text field, the value will be immediately available for the controller to consume. 
-* When the user hits Enter, the submit event fires and will use the value of the stock property when adding the new symbol. 
-* I cover form concepts in greater detail later, but this is your first preview of how a simple form is constructed.
-* The next section loops over the list of symbols using NgFor. 
-* I covered how this works earlier, so I won’t go into detail. For each symbol, it will create a local variable called symbol, create a new table row that binds the value, and a button that’s for removing the item. 
-* The remove button contains another event binding, this one to handle the click event. 
-* The `(click)="remove(symbol)"` attribute adds an event listener to the click event and will call the remove method in the controller, passing along the symbol. 
-* Because there are multiple instances of the button, each one passes along the local variable to know which symbol to remove. 
-* The last task is to add routing to the application to activate routes for the two views to act like two different pages.
+* When the **user hits Enter**, the **submit event fires** and will use the **value of the stock** property when adding the new symbol. 
+* The next section **loops over the list** of symbols using `NgFor`. 
+* For each symbol, it will create a **local variable** called `symbol`, create a **new table row** that **binds the value**, and a button that’s for **removing the item**. 
+* The `remove button` contains another **event binding**, this one to **handle the click event**. 
+* The `(click)="remove(symbol)"` attribute **adds an event listener** to the click event and will **call** the `remove method` in the controller, passing along the symbol. 
+* Because there are **multiple instances** of the button, each one passes along the **local variable** to know which symbol to remove. 
+* The last task is to **add routing** to the application to **activate routes** for the **two views** to act like **two different pages**.
+
+## Application routing
+#### The final piece of the application is the routing, which configures the different pages that the application can render. Most applications need some form of routing so it can display the correct part of the application at the expected time. 
+* Angular has a **router** that works well with the Angular architecture by mapping components to routes. 
+* The router works by **declaring an outlet in the template**, which is the place in the template that the **final rendered** component will be displayed. 
+* Think of the **outlet** as the **default placeholder** for the content, and until the content is ready to be displayed, it will be **empty**.
+* To set up our routes, we’ll **link the Manage and Dashboard components to two routes**. 
+* We’ll handle the configuration ourselves, because the **CLI doesn’t support setting up routes** in this particular release.
+* To begin, create a new file at **src/app/app.routes.ts** and fill it with the code from the following listing.
+
+```typescript
+import { Routes, RouterModule } from '@angular/router';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { ManageComponent } from './components/manage/manage.component';
+
+//Defines a route configuration array
+const routes: Routes = [
+    {path: '',
+    component: DashboardComponent},
+    
+    {path: 'manage',
+     component: ManageComponent}];
+
+//Exports the routes for use
+export const AppRoutes = RouterModule.forRoot(routes);
+```
+* This file’s main purpose is to configure the routes for the application, and we **start by importing** the `RouterModule` and the **Route type definition**. 
+* The `RouterModule` is used to **activate the router** and **accepts the routes configuration** when it’s initialized. 
+* We also import the **two routable components**, the *Dashboard* and *Manage* components, so we can reference them properly in our routes configuration.
+* The routes are defined as an **array of objects** that have **at least one property**—in this case two, for a URL path and a component. 
+* For the *first route*, there’s **no path**, so it acts as the **application index** (which will be `http://localhost:4200`) and links to the *Dashboard* component. 
+* The *second route* provides a URL path of *manage* (which will be `http://localhost:4200/manage`) and links to the *Manage* component. 
+* This is the most likely type of routing that you’ll do with Angular, though there are many ways to configure and nest routes.
+* Finally, we create a **new value AppRoutes**, which is assigned to the result of `RouterModule.forRoot(routes)`. 
+* We’ll dig further into how the `forRoot` method behaves later, but it’s **a way to pass configuration to the module**. 
+    * In this case, we’re passing the **array of routes**. 
+* We **export** this so we can **import** it into our **App module** and register it. 
+* Open the **src/app/app.module.ts** file and add a new line at the end of the imports that imports the AppRoutes object you created in the previous file:
+
+```
+import { AppRoutes } from './app.routes';
+```
+* Now update the **imports property** of your module to include the **AppRoutes** object.
+* This will **register the Router module** and our configuration with our application:
+
+```typescript
+imports: [
+BrowserModule,
+HttpClientModule,
+FormsModule,
+AppRoutes
+],
+```
+* The **final step** is to **declare a place for the router to render**, and update the links to use the router to navigate. 
+* Open the **src/app/app.component.html** file one last time and make a few modifications. 
+* First you’ll change the contents of the *main element* to have a different element, the **router outlet**:
+
+```html
+<main class="mdl-layout__content" style="padding: 20px;">
+<router-outlet></router-outlet>
+</main>
+```
+* This declares the **specific location in the application that the router should render the component**. 
+* It’s the same place that we’ve put our components while building them, so it should make sense that this is the best place.
+* Then we need to update the links to **use a new directive** that will **set up the navigation between routes**. 
+* The **RouterLink directive** binds to an **array of paths** that are used to build a URL:
+
+```html
+<nav class="mdl-navigation mdl-layout--large-screen-only">
+<a class="mdl-navigation__link" [routerLink]="['/']">Dashboard</a>
+<a class="mdl-navigation__link" [routerLink]="['/manage']">Manage</a>
+</nav>
+```
+* The **directive parses the array and tries to match to a known route**. 
+* Once it matches a route, it will add an `href` to the **anchor tag** that correctly links to that route.
+* The router is capable of **more advanced configuration**, such as *nested routes*, *accepting parameters*, and *having multiple outlets*.
+* Now your project is complete, and you can reload the application in the browser to see it running, as previewed earlier. 
+* Congratulations! You’ve got a working Angular app running, and now you can try to make it do some more things.
+
+## Summary
+Congratulations on making it through a functional Angular app! We went through a lot of Angular features quickly, but you should now have an understanding of how various parts are assembled into an app. Here is a quick recap of the primary takeaways:
+
+* Angular apps are components that contain a **tree of components**. The root app is **bootstrapped** on page load to initialize the application.
+* A component is an ES6 class with an `@Component` annotation that **adds metadata** to the class for Angular to properly render it.
+* Services are also ES6 modules and should be designed for **portability**. Any ES6 class could be used, even if it isn’t specifically meant for Angular.
+* **Directives are attributes** that modify the template in some way, such as `NgIf`, which conditionally **shows or hides** the DOM element based on the value of an *expression*.
+* Angular has **built-in form support** that includes the ability to automatically *validate*, *group*, and *bind data* with any form control, as well as *use events*.
+* Routing in Angular is based around **paths mapping to a component**. Routes will **render a single component**, and that component will also be able to **render any** additional components it needs.
