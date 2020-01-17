@@ -216,3 +216,36 @@ export class StocksService {
     * We’ll use `JiT` for all development in this book because it’s much faster to render and preview the application.
 
 ## Dependency injection
+1. **What is the problem solved by DI?**
+    * All but the most basic code **relies on using objects** from other parts of the application.
+    * **The problem is** that the larger your code base becomes, the harder it is to ensure that individual parts are encapsulated while still being easy to access. 
+    * Therefore, many programming languages or frameworks have some mechanism to **facilitate tracking and sharing objects**.
+    * There are many approaches to **structuring your code** in a way that allows you to **easily share objects**. 
+2. **What is Dependency injection?**
+    * Dependency injection (DI) is a **pattern for obtaining objects** that uses a registry to maintain a list of available objects and a service that allows you to request the object you need. 
+    * Rather than having to pass around objects, you can **ask for what you need** when you need it.
+3. **How DI is different from using JavaScript module imports and exports?**
+4. **Why do we need another method to pass code around when JavaScript now has modules?**
+    * Dependency injection shouldn’t be confused with JavaScript module imports. 
+    * There is a need for Angular to be able **to keep track** of what parts of the application need a particular service. 
+    * **JavaScript has no awareness of how dependencies are linked together**, which can be useful information in understanding how to best assemble dependencies. 
+    * Also, injecting a dependency with Angular will **resolve any additional dependencies**.
+5. **How Dependency injection system is constructed?**
+    * There are a few key pieces to the DI system. 
+    * **The injector**. 
+        * This is the **service** that Angular provides for **requesting and registering** dependencies. 
+        * The injector is often at **work behind the scenes**, but occasionally is used directly. 
+        * Most of the time, you’ll **invoke the injector** by **declaring a type annotation on the property**.
+        * For Example we injected the `HttpClient` service like this:` constructor(private http: HttpClient) {}`
+        * Because we declare the type as HttpClient, the application will use the injector to ensure that the http property contains an instance of the HttpClient service. 
+        * This seems like magic, but it’s merely a way to alias the dependency you would like to request without directly calling the injector API.
+    * **The Providers**. 
+        * Providers are responsible for **creating the instance of the object requested**. 
+        * The **injector** knows the list of available providers, and based on the name, **it calls a factory function** from the provider and **returns the requested object**.
+        * Anything that has been registered with an NgModule’s providers array is available to be injected in your application code.
+        * Providers **don’t have to be exposed to the root module** and instead can be made visible only to a particular component or component tree.
+6. **How to Inject a Dependency?**
+    * You can inject anywhere, but I prefer to use the TypeScript approach, as we saw earlier, where the **constructor properties are annotated with the specific type of service to inject**.
+    * **Alternatively**, you could use the `@Inject` decorator to **inject the Http service**, like this: `constructor(private @Inject(HttpClient) http) {}`
+        * This decorator wires up the dependency injection the same way as the TypeScript typing information. Either way you’ll get the same result.
+
