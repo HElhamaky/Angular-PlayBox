@@ -168,4 +168,51 @@ export class StocksService {
 * Services are ideal for placing this type of logic that simplifies the usage of code and makes it **possible to reuse**.
 * The principle of **separation of concerns** applies in Angular, and keeping individual entities focused on a single set of tasks is important for **maintainability and testability**.
 
-## How Angular begins to render an app
+## How Angular begins to render an app?
+
+* In Angular, the CLI generates a fairly lightweight app. It could be slightly smaller, but it’s easiest to consider the generated app as the base for future development, and I’ll often refer to it as the `base app`. 
+    * We’ll focus on the app that’s generated when you run `ng new app-name`.
+    * Angular has an app **bootstrapping mechanism** that kicks off the rendering. 
+    * Immediately upon loading the page, the **bootstrapper** is called to begin Angular execution. 
+* **You may be asking yourself, how does the bootstrap begin?** 
+    * The CLI uses **webpack** to build, and it **compiles** all the JavaScript and adds it as script tags to the bottom of the **index.html** on build. This is when it will run the code to begin your app.
+    * Now that Angular has started, it **loads your App module** and reads through any additional dependencies that need to be **loaded and bootstrapped**. 
+    * In the `base app`, the Browser **module is loaded** into the application **before execution** happens.
+    * Then Angular **renders the App component**, which is the root element of your application. 
+    * As this App component renders, any **child components are also rendered** as part of the component tree.
+    * This is like the **DOM** tree, except any special Angular template syntax has to be rendered by Angular. 
+    * As it renders, it will also **resolve bindings** and set up event listeners for anything that declares it. 
+    * Once this has been completed, the full application should be **rendered out and available** for the user to begin interacting with. 
+    * The **lifecycle** of the application **continues** as the user begins to use the application, and the application will begin to react. 
+    * As a user **navigates around** (Routing), the components on the screen will be removed, and new components will get loaded and rendered. 
+    * The cycle of reacting to the user and rendering the component tree continues until the application is closed.
+
+## Types of compilers
+* **What are types of Angular compilers?**
+    * Angular provides two types of compilers 
+        * Just-in-Time `JiT` compiler
+        * Ahead-of-Time `AoT` compiler.
+* **What are differences between these compilers?**
+    * The primary difference is 
+        * tooling and timing for the compiler, and 
+        * that can change the way your application behaves and 
+        * how it’s served to the user.
+* **Explain the JiT compilation process!**
+    * With JiT compilation, it means that the **compiling of the application happens in the browser *only after the assets* have all been loaded**.
+    * That means there will be a **lag between initially loading the page and being able to see the content**.
+    * You saw that in the chapter 2 example, because there is a fairly basic **“loading”** message displayed **until everything is ready** and the compiler has run.
+* **Explain the AoT compilation process!**
+    * AoT, is a way to render the content **before sending** it to the browser. 
+    * This means the user will be sent exactly what’s needed to display the content **without any kind of loading message** once the application assets have loaded.
+* **How really the two compilation processes differs?**
+    * The other big difference is that with `JiT`, the application **must also load the compiler library before the application can execute**, whereas the AoT version is **able to drop this payload from being sent**, causing a faster load experience.
+* **What are the benefits of AoT?**
+    * With AoT, we have the ability to perform a number of interesting **optimizations**, because the application is **compiled before serving**. 
+    * The other possibility it provides is **server-side rendering** for applications, which can be useful for pre-rendering applications with user-specific data.
+* **Production Tip**
+    * You should work to ensure your applications compile with the AoT compiler, because anytime you build your application for production it will use the AoT compiler. 
+* **Release Note**
+    * It is possible that in future releases of Angular, the `JiT` compiler may be removed entirely once AoT compilation is fast enough for development.
+    * We’ll use `JiT` for all development in this book because it’s much faster to render and preview the application.
+
+## Dependency injection
