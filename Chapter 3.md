@@ -248,6 +248,7 @@ export class StocksService {
     * You can inject anywhere, but I prefer to use the TypeScript approach, as we saw earlier, where the **constructor properties are annotated with the specific type of service to inject**.
     * **Alternatively**, you could use the `@Inject` decorator to **inject the Http service**, like this: `constructor(private @Inject(HttpClient) http) {}`
         * This decorator [`@Inject`], wires up the dependency injection the same way as the TypeScript typing information. Either way you’ll get the same result.
+        
 ## Change detection
 1. **What is Change Detection?**
     * Change detection is the mechanism that allows components to be updated when data changes in a parent component, and ensure views and data are in sync.
@@ -273,3 +274,124 @@ export class StocksService {
         * Timers/ intervals. 
     * The best way to think of it is that **anytime something asynchronous occurs, the change detection process begins** to determine what may have changed, because **synchronous calls are already handled** during the normal rendering flow of Angular.
     * **Think of it like this:** You can turn on your car, but until you put it in gear, push the pedal, or brake, the vehicle is in an idle state, waiting for the driver to give it something to do.
+    
+## Template expressions and bindings
+> A component always has a template, and therefore it’s a logical place to start our deep dive into how templates shape the behavior of your application. 
+
+1. **What is Angular approach in logic placement?**
+    * Angular allows the placement of logic and customization directly into the template, which allows for more declarative templates which is an elegant way to design applications. 
+    * Sometimes people think this is mixing presentation and business logic, which is true to some degree, but it allows us to write much cleaner code.
+2. **What really is a Template?**
+    * A template by itself is regular HTML, but with a few Angular capabilities that HTML markup takes on a whole new life. A template can leverage values stored in the controller inside the template logic. 
+3. **What are the main concepts introduced by Templates?**
+    * We saw a few templates in chapter 2, and they demonstrated several concepts:
+        * **Interpolation** — Displaying content in the page.
+        * **Attribute and property bindings** — Linking data from the component controller into attributes or properties of other elements.
+        * **Event bindings** — Adding event listeners to elements.
+        * **Directives** — Modifying the behavior or adding additional structure to elements.
+        * **Pipes** — Formatting data before it’s displayed on the page.
+4. **What are Template Expressions?**
+    * They are like normal JavaScript expressions (any statements you could conclude with a semicolon), and all values resolve against the component controller.
+5. **What are differences between JS and Template Expressions?**
+    * They’re **unable to reach globals**, such as console or window.
+    * They **can’t be used to assign values to variables** (except in events).
+    * They **can’t use** the new, `++`, `--`, `|`, and `&` operators.
+    * They **provide new operators:** `|` for pipes and the Elvis operator `?.` for allowing null properties.
+6. **Where Template Expressions are used?**
+    * Template expressions are used in **three places**:
+        * interpolation, 
+        * property bindings, 
+        * event bindings.
+7. **How data flows from the controller into a template?**
+8. **How events flow up from the template to the controller?**
+    * **Figure 3.8**
+9. **What are bindings?**
+    * Bindings are the **conduit for data or methods** to be used from a controller in the template; 
+    * They allow data in the controller to flow into the template, or events to call from the template back into the controller.
+
+## Interpolation
+> Interpolation is probably the most used type of template syntax in Angular.
+
+1. **How Interpolation works?** 
+    * Interpolation resolves a binding and displays the resulting value as a string in the page.
+    * The binding works by taking an expression, evaluating it, and replacing the binding with the result. 
+    * This is similar to how a spreadsheet can take a formula (such as adding the values of a column of cells), calculate the resulting value (by resolving the formula against the data stored in the spreadsheet), and then display the value in that cell (in place of the formula). 
+2. **Explain Interpolation with Example**
+    * Here is our interpolation example: `<p>{{user.name}}</p>`
+    * Interpolations always use the `{{value}}` syntax to bind data into the template. 
+    * It’s a familiar pattern for anyone who has used mustache templates, as anything between the double curly braces is evaluated to render some text. Here are some additional valid interpolation expressions that bind values into the view:
+    ```html
+    <!-- 1. Calculates the value of two numbers, adds to 30 -->
+    {{10 + 20}}
+    <!-- 2. Outputs a string "Just a simple string" -->
+    {{'Just a simple string'}}
+    <!-- 3. Binds into an attribute value, to link to profile -->
+    <a href="/users/{{user.user_id}}">View Profile</a>
+    <!-- 4. Outputs first and last name -->
+    {{user.first_name}} {{user.last_name}}
+    <!-- 5. Calls a method in the controller that should return a string -->
+    {{getName()}}
+    ```
+    * These expressions are **evaluated within the context of the component**, meaning your component controller should have a **property** called user and a `getName()` method. 
+    * The **expression context** is how the view resolves what a particular value refers to, so `{{user.name}}` is resolved based on the `user.name` property from the controller, as demonstrated.
+
+## Property bindings
+* Property bindings allow you to bind values to properties of an element to modify their behavior or appearance.
+* This can include properties such as class, disabled, href, or textContent. 
+* Property bindings also allow you to bind to custom component properties(Inputs). 
+* For example, if you load a record from the database that contains a `URL` to an image, you can bind that `URL` into an `img` element to display that image:`<img [src]="user.img" />`
+#### In fact, interpolation is shorthand for binding to the `textContent` property of an element.
+* They can both **accomplish the same thing** in many situations.
+* The syntax for property bindings is to put the property onto the element wrapped in brackets ([]). 
+* The **name should match the property**, usually **in camel case**, like `textContent`. 
+* We can rewrite the interpolation template to use property bindings like this:`<p [textContent]="user.name"></p>`
+#### Interpolation is a shortcut for a property binding to the `textContent` property of an element.
+* As with interpolation, the bindings are evaluated in the component context, so the binding will reference properties of the controller. 
+* Here you have the `[src]="user.img"` property binding, which does the same thing as `src="{{user.img}}"`. 
+* Both will evaluate the expression to bind the value to the image `src` property, but the syntax is different. 
+* Property bindings don’t use the curly braces and evaluate everything inside the quotes as the expression. 
+#### To restate: interpolation is a shortcut for a property binding to the `textContent` property of an element. 
+* We could rewrite our interpolation example like this:`<p [textContent]="user.name"></p>` 
+* This results in the same output of rendering the user’s name in this case, but doing it this way isn’t common because it makes it **harder to create longer text strings**. 
+* Also, most developers will find the **interpolation version to be more readable and concise**.
+* Using the `[]` syntax **binds to an element’s property**, not the attribute. 
+* **Properties are the DOM element’s property**. 
+* That makes it possible to **use any valid HTML element property** (such as the `img src` property).
+* Instead of binding the data to the attribute, **you’re binding data directly to the element property**, which is quite efficient.
+* **camelCase Note**
+    * Note that sometimes properties are in **camel case** even if the HTML attribute isn't.
+        * For example, the `rowspan` attribute is exposed as the `rowSpan` property. 
+    * If you did interpolation, you could use `rowspan="{{rows}}";` if you did **property binding**, you would **have to use** `[rowSpan]="rows"`. 
+    * I know it can be a little confusing, so when you’re debugging bindings, be sure to check that the names match.
+    
+## Special property bindings
+There are a couple of special property bindings for **setting a class and style property** for an element. 
+They are both different from many properties that you typically bind to, because these properties contain a list of classes or styles, instead of setting a single property, and Angular has a special syntax for setting these properties.
+The class property on an element is a `DOMTokenList`, which is a fancy array. 
+You can do `[class]="getClass()"` and it will set a string of class or classes, but this will mess with any of the classes on the element if they’re already set. 
+* Often you’ll want to toggle a single class, which you can do by using a `[class.className]` syntax in the property. 
+* It will see the `class.` prefix for the property binding and know you are binding a particular class called `className`. 
+* Let’s see an example and how it is rendered:
+```html
+<!-- isActive() returns true or false in order to set active class -->
+<h1 class="leading" [class.active]="isActive()">Title</h1>
+<!-- Renders to the following -->
+<h1 class="leading accent">Title</h1>
+```
+* The class binding syntax is useful for targeting specific classes to be added or removed from an element. 
+* It also only adds to the existing classes instead of replacing them entirely, like if you use `[class]="getClass()"`.
+* Likewise, the style property is a `CSSStyleDeclaration` object, which is a special object that holds all the CSS properties. Angular has the same type of syntax for style binding to set individual style properties. 
+* Using `[style.styleName]` you can set the value of any valid CSS style. For example
+```html
+<!-- getColor() returns a valid color -->
+<h1 [style.color]="getColor()">Title</h1>
+<h1 [style.line-height.em]="'2'">Title</h1>
+<!-- Renders to the following -->
+<h1 style="color: blue;">Title</h1>
+<h1 style="line-height: 2em;">Title</h1>
+```
+* Any valid CSS property can be used here, and it will render the binding as a style value directly on the element. 
+* Did you notice the second example has a third item, .em? 
+* For properties that accept units, you can use this syntax to declare the unit for the value that is returned by the expression. 
+* You can also leave it off and have the expression return the unit.
+* I find these special bindings to be most useful in simple or edge cases where I need to make a simple change. I usually use `NgClass` or `NgStyle`, because if you’re trying to change multiple classes or style rules on the same element, this syntax becomes cumbersome.
