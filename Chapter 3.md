@@ -247,5 +247,29 @@ export class StocksService {
 6. **How to Inject a Dependency?**
     * You can inject anywhere, but I prefer to use the TypeScript approach, as we saw earlier, where the **constructor properties are annotated with the specific type of service to inject**.
     * **Alternatively**, you could use the `@Inject` decorator to **inject the Http service**, like this: `constructor(private @Inject(HttpClient) http) {}`
-        * This decorator wires up the dependency injection the same way as the TypeScript typing information. Either way you’ll get the same result.
-
+        * This decorator [`@Inject`], wires up the dependency injection the same way as the TypeScript typing information. Either way you’ll get the same result.
+## Change detection
+1. **What is Change Detection?**
+    * Change detection is the mechanism that allows components to be updated when data changes in a parent component, and ensure views and data are in sync.
+    * Changes always come down **from the model into the view**, and Angular employs a **unidirectional propagation** of changes **from parents down to children**. **[Tree pushes data down to children and events bubble data up.]**
+    * This helps **ensure** that **if a parent changes, any children are also checked**, due to potential linked data.
+2. **Who is responsible for the CD mechanism?**
+    * Angular will run a change detection process to check whether values have changed since the last time the process ran. 
+    * JavaScript has no guaranteed way to notify about any change to an object, so Angular runs this process instead. 
+3. **How Change Detection mechanism is constructed?**
+    * Angular creates a *special class*, known as a **change detector**, when it renders a component. 
+    * **This class is in charge of keeping track of the state of the component data and detecting whether any values have changed between the times the change detection ran.** 
+    * **When a value change is detected in a component, it will update the component and potentially any child components as well.** 
+4. **What are Angular modes for triggering the changes?**
+    * Angular has **two ways** for changes to be triggered. 
+    * The **Default mode** 
+        * **Traverse the entire tree** looking for changes with each change detection process. 
+    * The **OnPush mode** 
+        * Tells Angular that the **component only cares about changes** to any values that are input into the component **from its parent**, and gives Angular the ability to **skip checking** the component during change detection **if** it already knows the **parent hasn’t changed**.
+5. **How Change Detection is triggered?**
+    * Change detection is triggered by 
+        * Events, 
+        * Receiving HTTP responses,
+        * Timers/ intervals. 
+    * The best way to think of it is that **anytime something asynchronous occurs, the change detection process begins** to determine what may have changed, because **synchronous calls are already handled** during the normal rendering flow of Angular.
+    * **Think of it like this:** You can turn on your car, but until you put it in gear, push the pedal, or brake, the vehicle is in an idle state, waiting for the driver to give it something to do.
