@@ -442,3 +442,13 @@ type="text" placeholder="Add Stock" />
 * Those familiar with AngularJS will be familiar with how it allows you to sync the value of a binding as it changes in either the template or the controller. It does this by doing a regular property binding and setting up an event binding for you behind the scenes.
 * You can only use `NgModel` with form elements, but you can use two-way binding syntax on properties. Generally, you will want to limit the use of this two-way binding for when it’s absolutely needed.
 * Event bindings are important to the way components and templates communicate, as well as to how components can communicate with one another. The syntax and concepts of event bindings are fairly simple, but can be used in more complex orchestrations to enhance communication between components.
+
+## Summary 
+This chapter should act as a helpful reference for the remainder of the book. 
+The primary takeaways are as follows:
+* An Angular application is a tree of components, and there is always a root application component.
+* The various entity types (modules, components, directives, pipes, services) each have a specific role and purpose.
+* Angular has two types of compilers, Ahead-of-Time `(AoT)` and Just-in-Time `(JiT)`, to give you different ways to render the application.
+* Dependency injection is fundamental for Angular to track all the objects in the application and make them available when they’re requested.
+* Change detection keeps the components in `sync` with the model data as asynchronous changes occur from user input or other events.
+* Templates contain several types of bindings: interpolation for displaying data, property bindings for modifying the element’s properties, attribute bindings for modifying non-property values of an element, and event bindings for handling events.
