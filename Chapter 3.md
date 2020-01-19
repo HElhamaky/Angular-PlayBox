@@ -395,3 +395,50 @@ You can do `[class]="getClass()"` and it will set a string of class or classes, 
 * For properties that accept units, you can use this syntax to declare the unit for the value that is returned by the expression. 
 * You can also leave it off and have the expression return the unit.
 * I find these special bindings to be most useful in simple or edge cases where I need to make a simple change. I usually use `NgClass` or `NgStyle`, because if you’re trying to change multiple classes or style rules on the same element, this syntax becomes cumbersome.
+
+## Attribute bindings
+* Some element properties can’t be directly bound, because some HTML elements have attributes that aren't also made available as properties of the element. The aria (accessibility) attributes are one such example of an attribute that doesn’t get added as a property to the element.
+* You can always inspect an element in the developer tools to see the available properties.
+* That’s the fastest way to verify if you can bind to a particular attribute or not. 
+* Once you’ve verified that the attribute isn’t exposed as a property, you have an alternative syntax that Angular supports to bind to those attributes. `aria attributes` are used to indicate information to assistive devices about elements, such as aria-required, which marks an input as required for submission. 
+* Normally, you’d use an attribute like this:
+```html
+<input id="username" type="text" aria-required="true" />
+```
+* Imagine that this field might not always be required, because your form may require giving a username or an email, depending on the situation. If you try to do `aria-required="{{isRequired()}}"` or `[aria-required]="isRequired()"`, you’ll get a template parsing error. Because this attribute isn’t a property, it can’t be directly bound to.
+* The workaround is using the special attribute binding syntax, which looks like a property binding, except you put the name of the attribute in the brackets with the prefix `attr.`, like this:
+```html
+<input id="username" type="text" [attr.aria-required]="isRequired()" />
+```
+* Angular will now bind to the attribute and not the nonexistent property. 
+There aren’t many attributes that aren’t also properties, but if you come across a template parse error that your binding isn’t a known native property, you’re probably binding to one of these attributes.
+* There aren’t too many situations where you’ll need to use attribute bindings, but it’s likely that you’ll need them occasionally.
+
+## Event bindings
+* So far, all data has flowed from the component into the template elements. That’s great for displaying data, but we need some way for the elements in our template to bind back into the component. The good news is that JavaScript has a great mechanism built in to pass data back up, by using events.
+* When people use applications, they generate all kinds of events as they interact with them. Any time they move the mouse, click, type, or touch the screen, they generate events in JavaScript. 
+* You’ve probably written event listeners before, and we’ll use Angular’s event bindings to do the same thing. 
+* You can also create your own events and fire them as needed.
+* First let’s take some general use cases to understand the use cases for event bindings.
+* When a user is logging into your app, they fill in their login credentials and submit the form (usually by hitting Enter or clicking a button). The event is the `form submit`, and you then want that event to trigger some behavior in your component. 
+* Traditionally, you would create an event listener that listens to the form submit event, but with Angular we can create a binding that will call a method on the component controller to handle the event (figure 3.9).
+* The syntax for event bindings uses parentheses `()` to bind to a known event. 
+* You will use the name of the event inside the parentheses, without the on part of the name. 
+* For an example form submit event, you would write it like this:
+```html
+<form (submit)="save()">...</form>
+```
+* This will create an event listener on the form that will call the `save()` method in the component controller when the form is submitted. The context is important because the event binding only binds up to the current component, but you can trigger events and those will bubble up to parent elements and components if they’re listening. If you need a reference of available standard events in HTML, `https://developer.mozilla.org/en-US/docs/Web/Events` is an excellent reference. 
+* Components and directives can emit their own events, and you can listen to those events. 
+* Let’s also look at an example from  chapter 2. In the manage view, we had a form that let you add a new stock. Here’s the form again:
+```html
+<form style="margin-bottom: 5px;" (submit)="add()">
+<input name="stock" [(ngModel)]="stock" class="mdl-textfield__input"
+type="text" placeholder="Add Stock" />
+</form>
+```
+* There are two parts: the form element that has the submit event binding and the input that holds the data the user inputs via the keyboard. When the user hits the Enter key, the form submit event fires, calling the add() method in the controller. The method looks at the value from the input box and adds the stock to the list. This was all triggered by the submit event.
+* We also see a special binding syntax here: the two-way binding approach. It uses both the property and event binding syntax together, which Angular likes to call banana in a box (it does kind of look like that if you type `[()]` and use your imagination). 
+* Those familiar with AngularJS will be familiar with how it allows you to sync the value of a binding as it changes in either the template or the controller. It does this by doing a regular property binding and setting up an event binding for you behind the scenes.
+* You can only use `NgModel` with form elements, but you can use two-way binding syntax on properties. Generally, you will want to limit the use of this two-way binding for when it’s absolutely needed.
+* Event bindings are important to the way components and templates communicate, as well as to how components can communicate with one another. The syntax and concepts of event bindings are fairly simple, but can be used in more complex orchestrations to enhance communication between components.
