@@ -289,7 +289,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 <app-dashboard></app-dashboard>
 ```
 * That’s it for the Dashboard component—for the moment. We’ll add more to the Dashboard later in this chapter as we build more components to handle the displaying of the data, starting with the next component, which will display the CPU and memory metrics and will accept data through an input.
-* Using inputs with components When you create your own components, you can define properties that can accept input through property bindings. Any default HTML element properties can also be bound to a component, but you can define additional properties that the component can use to manage its lifecycle or display.
+
+## Using inputs with components 
+> When you create your own components, you can define properties that can accept input through property bindings. Any default HTML element properties can also be bound to a component, but you can define additional properties that the component can use to manage its lifecycle or display.
+
 * We saw this in chapter 2, and the following is a snippet we used to bind stock data into the Summary component. You see the brackets around the stock attribute to indicate that the value is binding to the data found in the stock property:
 ```html
 <summary [stock]="stock"></summary>
@@ -300,3 +303,170 @@ export class DashboardComponent implements OnInit, OnDestroy {
 * This is shown in figure 4.7, which is the result of the work we’ll do in this section. 
 * The role of these components is to display the CPU and Memory metric information of the entire data center. 
 * Because the only difference between these components is the data, we’ll make it reusable, using inputs to pass data into the component.
+
+### Input basics
+>Let’s build our component that has an input and see it in action before we dig into it further. Use the CLI to generate a new component like you see here: `ng generate component metric`
+
+* We’ll start by looking at the component controller, so open the **src/app/metric/metric.component.ts** file and update it with what you see in the following listing.
+
+```typescript
+import { Component, Input } from '@angular/core';
+
+@Component({
+    selector: 'app-metric',
+    templateUrl: './metric.component.html',
+    styleUrls: ['./metric.component.css']
+})
+
+export class MetricComponent {
+    @Input() title: string = '';
+    @Input() description: string = '';
+    @Input('used') value: number = 0;
+    @Input('available') max: number = 100;
+    
+    isDanger() {
+        return this.value / this.max > 0.7;
+            }
+}
+```
+* The Metric component first imports the Input decorator, which is used to decorate any property that you want to define as an input. In this case, we have four inputs declared, which means that all the properties of this component are made available for binding.
+* Then we implement a simple method called isDanger() that will tell us whether the utilization is above 70% or not, so we can display the metric in a different way. 
+* The first two properties are the title and description. The Input decorator sits in front and will make each of the properties available for binding based on the name of the property. 
+* Though I’ve declared a typing for each of the properties, it’s important to note that they don’t verify that the input matches that type at runtime. You’ll still need to sanitize the inputs or handle invalid values.
+* The last two properties pass an optional value into the Input decorator, which is a way to change the name of the property that’s used in the binding from the name used internally for the component. That allows us to alias the used attribute to the value property, and the available attribute to the max property. 
+* When you bind to the Metric component, you’ll use the binding like [used]="node.used", but inside the component it will use the property value.
+* You may hear some refer to the component API, and what they’re talking about is the component inputs. Because this is the primary way for passing data into a component, it’s much like a contract for how to consume the component in your application. 
+* Being able to rename the input can be beneficial for code clarity because it allows you to expose bindings differently from the internal implementation. But I recommend making the names consistent for simplicity and debugging.
+* I also recommend that you ensure that your input bindings and property names are as clear as possible. Making your property names short to save characters is rarely worth it, because developers no longer know what that property is about without digging deeper into the code.
+* As you build more components and work on larger projects, you’ll likely start to create components that are reused across projects and applications. This is a core principle of Angular as well—to enable easy reuse of components.
+* Now let’s set up the Metric component template, and we’ll even use the ng-bootstrap Progress Bar component as an example of how to consume another component that has inputs. 
+* Open the **src/app/metric/metric.component.html** file and update it to the contents of the following listing.
+
+```html
+<div class="card card-block">
+    <div class="card-body">
+        <nav class="navbar navbar-dark bg-primary mb-1" [ngClass]="{'bg-danger':
+        isDanger(), 'bg-success': !isDanger()}">
+            <h1 class="navbar-brand mb-0">{{title}}</h1>
+        </nav>
+    
+        <h4 class="card-title">{{value}}/{{max}} ({{value / max |
+        percent:'1.0-2'}})
+        </h4>
+    
+        <p class="card-text">
+        {{description}}
+        </p>
+    
+        <ngb-progressbar [value]="value" [max]="max" [type]="isDanger() ?
+        'danger' : 'success'">
+        </ngb-progressbar>
+    
+    </div>
+</div>
+```
+* This template uses a lot of the template syntax capabilities of Angular in a short amount of space. First, we’re using the bootstrap CSS styling to create a card layout for the Metric component, so the card classes are from bootstrap. 
+* All the bindings in this template will resolve to the four input properties that were defined in the controller, but notice that we’re using the property names and not any alias names passed to the Input.
+* The nav element is used to create the top header bar that contains the title. 
+* Using NgClass, it will either apply the bg-danger or bg-success class based on how much of the overall value has been utilized.
+* There are a few basic interpolation bindings, such as the title, value, max, and description. We also have an example of a more complex interpolation expression that divides the value by max and formats it as a percentage.
+* Finally, we have a sample of using the ng-bootstrap Progress Bar component. Based on the documentation for the progress bar, it accepts the three bindings we declared to give it the bindings for value, max, and type. value and max are numbers, and type is the bootstrap class (such as danger or success) to use for coloring the bar.
+* The Progress Bar is a great example of a well-designed component. It has a clear set of input properties. It doesn’t require a lot of effort to consume and internalizes much of the logic.
+* Because we added the ng-bootstrap module to our App module earlier, all the components provided by ng-bootstrap are available without having to make any special requests for them. 
+* Most third-party library experiences will be similar, and once you’ve added the third-party module to your app, your application can easily consume the values made available by the third party.
+* Let’s get this Metric component on the screen. Open up the **src/app/dashboard/dashboard.component.html** file and replace its contents with the code in the following listing. 
+* Remember, the Dashboard component contains the data that’s now able to be bound into the component.
+
+```html
+<div class="container mt-2">
+    <div class="card card-block">
+        <nav class="navbar navbar-dark bg-inverse mb-1">
+        <h1 class="navbar-brand mb-0">Overall Metrics</h1>
+        </nav>
+    
+        <div class="row">
+            <app-metric class="col-sm-6"
+            [used]="cpu.used"
+            [available]="cpu.available"
+            [title]="'CPU'"
+            [description]="'utilization of CPU cores'">
+            </app-metric>
+    
+            <app-metric class="col-sm-6"
+            [used]="mem.used"
+            [available]="mem.available"
+            [title]="'Memory'"
+            [description]="'utilization of memory in GB'">
+            </app-metric>
+        </div>
+    </div>
+</div>
+```
+* Here we define a bit of markup for the bootstrap styling to create a new container and card block for display purposes. The really meaningful part is the use of the Metric component. Notice we’re still able to apply a class to the element because it’s treated like a regular HTML element when rendered.
+* Each of the four properties we defined in our component is listed as an attribute with the binding syntax of brackets around it. Remember, this is the syntax to tell Angular to evaluate the expression against the parent component (the Dashboard component) and return its value to the child component (the Metric component). 
+* Because they were marked as inputs, we can bind values to those properties that aren’t standard HTML properties. 
+* For the used and available properties, we bind to the corresponding properties on the cpu and mem controller values 
+* Then for the title and description, we provide a string literal, because they’re evaluated as an expression.
+* Did you notice how this component is more generic? It accepts the four inputs that it needs to display, which even includes some text. We can easily use the same component more than once and have it display for each metric uniquely. This is usually preferred over making a lot of components that do nearly the same task.
+
+### Intercepting inputs
+>We’re currently blindly accepting whatever values are passed into the component and using them without any kind of validation. 
+
+* It’s easy to forget to validate or sanitize data inputs, especially when you’re building the component tree and are confident about the types of data that are being passed along.
+* The problem is as applications grow or as components get reused in new ways, it becomes harder to keep track of the inputs. 
+* It’s also good practice to try and validate inputs when possible to harden your components.
+* For instance, if we changed the value of a binding to a Metric component to give it the wrong type, the Metric component would have some issues. Try it out yourself.
+* Change `[used]="cpu.used"` to `[used]="'fail'"`. This changes the binding to pass a string instead of a number. The Metric component will throw an error because eventually it will try to divide the string and a number, which isn’t valid.
+* I like to use a method to intercept inputs that need validation by using getter and setter methods. This is a feature that has been in JavaScript for a while, but I haven’t seen it widely used until more recently.
+* The main idea here is that instead of having a property to bind to directly, you bind the input to the setter method, which stores the real value on a private property so you can protect it from direct access. The setter method is also where you can run any validation logic. Then you use the getter method to return the value of the private property anytime it’s requested.
+* Let’s modify our Metric component to use this approach to validate input values and protect our template from division errors with values that aren’t numbers. Open the **src/app/metric/metric.component.ts** file and change the class to what you see in the following listing.
+
+```typescript
+export class MetricComponent {
+
+@Input() title: string;
+@Input() description: string;
+
+private _value: number = 0;
+private _max: number = 100;
+
+@Input('used')
+
+set value(value: number) {
+    if (isNaN(value)) value = 0;
+    this._value = value;
+    }
+
+get value(): number { return this._value; }
+
+@Input('available')
+
+set max(max: number) {
+if (isNaN(max)) max = 100;
+this._max = max;
+}
+
+get max(): number { return this._max; }
+    isDanger() {
+    return this.value / this.max > 0.7;
+    }
+}
+```
+* If you haven’t used a getter or setter method before, they’re functions that are proceeded by the get or set keyword. 
+* The name of the method has to match the name of the property, so in this example get value(){} will be called anytime something requests the this.value property. 
+* Likewise, anytime something stores a new value to this.value, it will call the setvalue(value){} method and pass the value that was stored.
+* We started by creating two new private properties, _value and _max. With the private keyword, TypeScript will ensure they’re not directly exposed in the controller so they can’t be mutated outside of this controller. 
+* The underscore before the name is a common convention to notify developers that a property is considered private.
+* We implement the value setter method and also decorate it with the Input decorator.
+* This registers a normal input property, but, instead, when the binding into the component happens, it will pass through this function. 
+* The function does a check to ensure that the value is a number—if not, it sets it to 0 and stores that value on the _value property. Then we implement the getter method to retrieve the _value property.
+* We do the same basic thing for the max property, but set the default to 100 if the input is invalid.
+* We’ve now guarded our inputs against invalid values, but there are other scenarios where you may want to intercept values. 
+* You may want to format some values before they’re used, such as ensuring that words are capitalized.
+* The main problem with this approach is that every time you read the property using a getter method, it will run the logic inside the getter method. 
+* This probably isn’t a big deal in most cases, such as if you’re only returning a private property as we’re doing here, but if you have more complex logic, the functions might take a toll on rendering speed. 
+* Also, don’t do any mutation in the getter function! Doing so will cause unexpected behaviors because you can’t be sure how many times the getter function will be called.
+* There’s one more way that we’ll intercept and modify inputs as they come into the component, but we’ll first take a look at how to project content inside your components.
+
+## Content projection
+>Imagine that you created a Card component and you wanted the card content area to be flexible to accept any kind of markup that a developer needed to insert.
