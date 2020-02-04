@@ -188,19 +188,16 @@ snippet across your application.
 * You could route to the same component for different routes, but that isn’t common.
 
 ## Creating a Data component
-We’re going to start by making a component that will help us manage data. This is a
+>We’re going to start by making a component that will help us manage data. This is a
 dashboard for a data center, so the data it provides is largely numeric values of various
-metrics that are important to determine the health of the data center. We’ll create a
-component, aptly named the Dashboard component, which will host our data and display
-it in the app.
-We’ll have the raw data print to the screen for the moment until we create other components.
-At the end of this section your app should look like figure 4.6.
-Start by generating a new component using the CLI. Then we’ll add the logic into the
-controller and see a few lifecycle hooks in action. This will be a good example of a Data
-component because it will handle the data for the entire application and not deal too
-much with the display of content: `ng generate component dashboard`
-Now open the **src/app/dashboard/dashboard.component.ts** file and replace its contents
-with what you see in the following listing.
+metrics that are important to determine the health of the data center. 
+
+* We’ll create a component, aptly named the Dashboard component, which will host our data and display it in the app.
+* We’ll have the raw data print to the screen for the moment until we create other components.
+* At the end of this section your app should look like figure 4.6.
+* Start by generating a new component using the CLI. 
+* Then we’ll add the logic into the controller and see a few lifecycle hooks in action. This will be a good example of a Data component because it will handle the data for the entire application and not deal too much with the display of content: `ng generate component dashboard`
+* Now open the **src/app/dashboard/dashboard.component.ts** file and replace its contents with what you see in the following listing.
 
 ```typescript
 import { Component, OnInit, OnDestroy } from '@angular/core';
@@ -471,258 +468,189 @@ get max(): number { return this._max; }
 ## Content projection
 >Imagine that you created a Card component and you wanted the card content area to be flexible to accept any kind of markup that a developer needed to insert.
 
-We can accomplish this using content projection, which allows us to declare the place to insert
-external content into our component.
-Content projection is a concept Angular implements that comes from web components.
-If we think about the role of display components, the need to accept markup to
-display inside the component is fairly common. Tabs, cards, navbars, modals, dialogs,
-sidebars—the list goes on for types of UI elements that could accept a generic set of
-markups to display within the component.
-Because we want to create reusable display components, content projection is a key
-capability that we’ll need to use. The good news is that it’s fairly simple to implement, so
-let’s go ahead and see it in action.
-We’re going to build two components that help us create a table to display each
-of the nodes in a cluster of servers. If you think about it, a table already uses content
-projection because you create a table and then nest rows inside the headers, and then
-inside the rows you insert the cells. See figure 4.8.
-Using the CLI, generate two new components, one for the Nodes component and
-another for the Nodes Row component:
-ng generate component nodes
-ng generate component nodes-row
+* We can accomplish this using content projection, which allows us to declare the place to insert external content into our component.
+* Content projection is a concept Angular implements that comes from web components.
+* If we think about the role of display components, the need to accept markup to display inside the component is fairly common. Tabs, cards, navbars, modals, dialogs, sidebars—the list goes on for types of UI elements that could accept a generic set of markups to display within the component.
+* Because we want to create reusable display components, content projection is a key capability that we’ll need to use. The good news is that it’s fairly simple to implement, so let’s go ahead and see it in action.
+* We’re going to build two components that help us create a table to display each of the nodes in a cluster of servers. If you think about it, a table already uses content projection because you create a table and then nest rows inside the headers, and then inside the rows you insert the cells. See figure 4.8.
+* Using the CLI, generate two new components, one for the Nodes component and another for the Nodes Row component:
+`ng generate component nodes`
+`ng generate component nodes-row`
 
-We’ll start by getting the Nodes component up and running, and we’re only going to
-start with the template. The controller is empty, and for this use case we don’t need any
-controller logic to use content projection. Open src/app/nodes/nodes.component.
-html and replace its contents with the following listing.
+* We’ll start by getting the Nodes component up and running, and we’re only going to start with the template. 
+* The controller is empty, and for this use case we don’t need any controller logic to use content projection.
+* Open **src/app/nodes/nodes.component.html** and replace its contents with the following listing.
 
-```
+```html
 <thead>
-<tr>
-<th>Node</th>
-<th [colSpan]="2">CPU</th>
-<th [colSpan]="2">Memory</th>
-<th>Details</th>
-</tr>
+    <tr>
+        <th>Node</th>
+        <th [colSpan]="2">CPU</th>
+        <th [colSpan]="2">Memory</th>
+        <th>Details</th>
+    </tr>
 </thead>
+
 <ng-content></ng-content>
 ```
-You can see this template has the markup for a table header. I want to point out the
-use of property binding to a non-standard name; in this case the attribute is colspan,
-but the property on the element is colSpan. The only benefit to using the binding
-here is that normally you need to bind to an expression instead of a static value, so you
-wouldn’t do this.
-The really interesting aspect is the NgContent element, which tells Angular that this
-component has an insertion point for content. When someone uses this element and
-they nest additional markup inside the element, it will be placed where the NgContent
-element currently sits. That allows you to choose exactly where the content is inserted
-(hence the name insertion point).
-We’ll get to see how this works shortly, but we want to make one small change to the
-component decorator. Open the src/app/nodes/nodes.component.ts file and change
-the selector to the following:
-selector: '[app-nodes]',
-We’ve changed the selector here to say that it will look for the attribute app-nodes
-instead of an element called app-nodes. The selector can take any valid CSS selector.
-In this case, we use the attribute CSS selector to target an element with the app-nodes
-attribute. We do this so we can apply this component onto another element.
-The Nodes component creates our table header, and now we need to create a component
-that handles displaying the individual rows of content. Open the src/app/nodesrow/
-nodes-row.component.html file and replace its content with the code found in the
-following listing.
+* You can see this template has the markup for a table header. I want to point out the use of property binding to a non-standard name; in this case the attribute is colspan, but the property on the element is colSpan. 
+* The only benefit to using the binding here is that normally you need to bind to an expression instead of a static value, so you wouldn’t do this.
+* The really interesting aspect is the `NgContent` element, which tells Angular that this component has an insertion point for content. When someone uses this element and they nest additional markup inside the element, it will be placed where the NgContent element currently sits. That allows you to choose exactly where the content is inserted (hence the name insertion point).
+* We’ll get to see how this works shortly, but we want to make one small change to the component decorator. * Open the **src/app/nodes/nodes.component.ts** file and change the selector to the following: `selector: '[app-nodes]'`, We’ve changed the selector here to say that it will look for the attribute app-nodes instead of an element called app-nodes. The selector can take any valid CSS selector.
+* In this case, we use the attribute CSS selector to target an element with the app-nodes attribute. 
+* We do this so we can apply this component onto another element.
+* The Nodes component creates our table header, and now we need to create a component that handles displaying the individual rows of content. 
+* Open the **src/app/nodesrow/nodes-row.component.html** file and replace its content with the code found in the following listing.
 
-```
+```html
 <th scope="row">{{node.name}}</th>
-<td [class.table-danger]="isDanger('cpu')">
-{{node.cpu.used}}/{{node.cpu.available}}
-</td>
-<td [class.table-danger]="isDanger('cpu')">
-({{node.cpu.used / node.cpu.available | percent}})
-</td>
-<td [class.table-danger]="isDanger('mem')">
-{{node.mem.used}}/{{node.mem.available}}
-</td>
-<td [class.table-danger]="isDanger('mem')">
-({{node.mem.used / node.mem.available | percent}})
-</td>
+    
+    <td [class.table-danger]="isDanger('cpu')">
+    {{node.cpu.used}}/{{node.cpu.available}}
+    </td>
+
+    <td [class.table-danger]="isDanger('cpu')">
+    ({{node.cpu.used / node.cpu.available | percent}})
+    </td>
+
+    <td [class.table-danger]="isDanger('mem')">
+    {{node.mem.used}}/{{node.mem.available}}
+    </td>
+
+    <td [class.table-danger]="isDanger('mem')">
+    ({{node.mem.used / node.mem.available | percent}})
+    </td>
+
 <td><button class="btn btn-secondary">View</button></td>
 ```
-The template consists of a set of table cells that display various data. The data cells use
-the special class binding to conditionally apply the table-danger CSS class to a cell
-if the value is over the 70% threshold. It also contains a binding that divides the values
-to produce a percentage of utilization, and uses the Percent pipe to format the value.
-Now hopefully you’re thinking that the component must receive the node object via
-an input because, as we already discussed, the Dashboard component holds all the data.
-For that to work, we need to set up our component controller properly and also implement
-the isDanger() method that is called in this template. To do that, open the src/
-app/nodes-row/nodes-row.component.ts file and replace its contents with what you
-see in the following listing.
+* The template consists of a set of table cells that display various data. The data cells usethe special class binding to conditionally apply the table-danger CSS class to a cell if the value is over the 70% threshold. 
+* It also contains a binding that divides the values to produce a percentage of utilization, and uses the Percent pipe to format the value.
+* Now hopefully you’re thinking that the component must receive the node object via an input because, as we already discussed, the Dashboard component holds all the data.
+* For that to work, we need to set up our component controller properly and also implement the isDanger() method that is called in this template. To do that, open the src/app/nodes-row/nodes-row.component.ts file and replace its contents with what you see in the following listing.
 
-```
+```typescript
 import { Component, Input } from '@angular/core';
+
 @Component({
 selector: '[app-nodes-row]',
 templateUrl: './nodes-row.component.html',
 styleUrls: ['./nodes-row.component.css']
 })
+
 export class NodesRowComponent {
+
 @Input() node: any;
-isDanger(prop) {
-return this.node[prop].used / this.node[prop].available > 0.7;
-}
+    isDanger(prop) {
+    return this.node[prop].used / this.node[prop].available > 0.7;
+    }
 }
 
 ```
-We want to use the attribute selector for this component as well, so update the selector
-accordingly. Then we set up the node property as an input so that we can bind values
-into this component, and implement the isDanger() method to calculate whether the
-usage exceeds the 70% threshold we’ve set.
-This component doesn’t have any content insertion, because it only describes a table
-row. But because we’ll use it more than once, it was prudent to abstract it into its own
-component. This makes it a perfect example of a Display component that modifies its
-own display based on the data that’s provided as an input.
-Now we can see these two components in action. Open the src/app/dashboard/
-dashboard.component.html file and add the code in the following listing to the bottom
-of the template (don’t remove anything—add it).
+* We want to use the attribute selector for this component as well, so update the selector accordingly. Then we set up the node property as an input so that we can bind values into this component, and implement the `isDanger()` method to calculate whether the usage exceeds the 70% threshold we’ve set.
+* This component doesn’t have any content insertion, because it only describes a table row. 
+* But because we’ll use it more than once, it was prudent to abstract it into its own component. 
+* This makes it a perfect example of a Display component that modifies its own display based on the data that’s provided as an input.
+* Now we can see these two components in action. Open the **src/app/dashboard/dashboard.component.html** file and add the code in the following listing to the bottom of the template (don’t remove anything—add it).
 
-```
+```html
 <div class="container mt-2">
-<div class="card card-block">
-<div class="card-body">
-<nav class="navbar navbar-dark bg-inverse mb-1">
-<h1 class="navbar-brand mb-0">Cluster 1</h1>
-</nav>
-<table app-nodes class="table table-hover">
-<tr app-nodes-row *ngFor="let node of cluster1" [node]="node"></tr>
-</table>
-<nav class="navbar navbar-dark bg-inverse mb-1">
-<h1 class="navbar-brand mb-0">Cluster 2</h1>
-</nav>
-<table app-nodes class="table table-hover">
-<tr app-nodes-row *ngFor="let node of cluster2" [node]="node"></tr>
-</table>
-</div>
-</div>
+    <div class="card card-block">
+        <div class="card-body">
+    
+        <nav class="navbar navbar-dark bg-inverse mb-1">
+        <h1 class="navbar-brand mb-0">Cluster 1</h1>
+        </nav>
+        
+        <table app-nodes class="table table-hover">
+        <tr app-nodes-row *ngFor="let node of cluster1" [node]="node"></tr>
+        </table>
+        
+        <nav class="navbar navbar-dark bg-inverse mb-1">
+        <h1 class="navbar-brand mb-0">Cluster 2</h1>
+        </nav>
+        
+        <table app-nodes class="table table-hover">
+        <tr app-nodes-row *ngFor="let node of cluster2" [node]="node"></tr>
+        </table>
+        </div>
+    </div>
 </div>
 ```
-The dashboard now implements another section that contains the two cluster tables.
-Because we used the attribute selector for the Nodes component on the table element,
-it will apply the component template inside the table. That will insert the table head
-elements that are in the Nodes component template, but it also contains the NgContent
-insertion point.
-The table has a child element, the table row element, and the Nodes Row component
-is applied to that row. It also has ngFor to loop over all the nodes in a given cluster,
-so there will be three instances of it created per table. Finally, the table row also has a
-binding to capture the specific node value. The table rows show several distinct Angular
-capabilities working together to easily iterate over a list and display a table row that is
-abstracted into a component.
-We’ve injected content into one place, but what if we want to have multiple insertion
-points? We can do that too by naming our insertion points. To demonstrate, let’s
-replace the way we bind the title and description of the Metric component with child
-elements.
-Open src/app/metric/metric.component.html and update it to reflect the code in
-the following listing. We can use multiple NgContent elements by adding an attribute
-that has a CSS selector to use for targeting.
+* The dashboard now implements another section that contains the two cluster tables.
+* Because we used the attribute selector for the Nodes component on the table element, it will apply the component template inside the table. That will insert the table head elements that are in the Nodes component template, but it also contains the `NgContent` insertion point.
+* The table has a child element, the table row element, and the Nodes Row component is applied to that row. It also has ngFor to loop over all the nodes in a given cluster, so there will be three instances of it created per table. 
+* Finally, the table row also has a binding to capture the specific node value. The table rows show several distinct Angular capabilities working together to easily iterate over a list and display a table row that is abstracted into a component.
+* We’ve injected content into one place, but what if we want to have multiple insertion points? We can do that too by naming our insertion points. To demonstrate, let’s replace the way we bind the title and description of the Metric component with child elements.
+* Open **src/app/metric/metric.component.html** and update it to reflect the code in the following listing. We can use multiple NgContent elements by adding an attribute that has a CSS selector to use for targeting.
 
-```
+```html
 <div class="card card-block">
-<div class="card-body">
-<nav class="navbar navbar-dark bg-primary mb-1" [ngClass]="{'bg-danger':
-isDanger(), 'bg-success': !isDanger()}">
-<h1 class="navbar-brand mb-0"><ng-content select="metric-title"></ngcontent></
-h1>
-</nav>
-<h4 class="card-title">{{value}}/{{max}} ({{value / max |
-percent:'1.0-2'}})</h4>
-<p class="card-text">
-<ng-content select="metric-description"></ng-content>
-</p>
-<ngb-progressbar [value]="value" [max]="max" [type]="isDanger() ?
-'danger' : 'success'"></ngb-progressbar>
-</div>
+    <div class="card-body">
+        <nav class="navbar navbar-dark bg-primary mb-1" [ngClass]="{'bg-danger':isDanger(), 'bg-success':!isDanger()}">
+        <h1 class="navbar-brand mb-0">
+            <ng-content select="metric-title"></ngcontent>
+        </h1>
+        </nav>
+    <h4 class="card-title">{{value}}/{{max}} ({{value / max |percent:'1.0-2'}})</h4>
+    
+    <p class="card-text">
+    <ng-content select="metric-description"></ng-content>
+    </p>
+    
+    <ngb-progressbar [value]="value" [max]="max" [type]="isDanger() ? 'danger' : 'success'"></ngb-progressbar>
+    
+    </div>
 </div>
 ```
-We’ve replaced the interpolation bindings with an NgContent element, and in both
-cases it has a select attribute. This is a CSS selector that Angular will look for while
-rendering to determine what content to insert where. In this case, we’re expecting to
-have two elements, metric-title and metric-description.
-That means the Metric component needs to have two child elements by those names
-to properly display that content, but if it’s missing, it will be blank. You could use other
-CSS selectors, and it would locate the elements based on those selectors, such as a class
-name or attribute.
-
-We should also remove the title and description inputs from the component, so open
-src/app/metric/metric.component.ts and remove these two lines:
+* We’ve replaced the interpolation bindings with an NgContent element, and in both cases it has a select attribute. This is a CSS selector that Angular will look for while rendering to determine what content to insert where. In this case, we’re expecting to have two elements, metric-title and metric-description.
+* That means the Metric component needs to have two child elements by those names to properly display that content, but if it’s missing, it will be blank. You could use other CSS selectors, and it would locate the elements based on those selectors, such as a class name or attribute.
+* We should also remove the title and description inputs from the component, so open **src/app/metric/metric.component.ts** and remove these two lines:
+```typescript
 @Input() title: string;
 @Input() description: string;
-Now we need to update our Dashboard component to use these new elements instead
-of binding directly to properties, because it will throw errors after removing them from
-the Metric component. Open src/app/dashboard/dashboard.component.html and
-modify the section, as you see in the following listing.
+```
+* Now we need to update our Dashboard component to use these new elements instead of binding directly to properties, because it will throw errors after removing them from the Metric component. 
+* Open **src/app/dashboard/dashboard.component.html** and modify the section, as you see in the following listing.
 
-```
+```html
 <div class="container mt-2">
-<div class="row">
-<app-metric class="col-sm-6" [used]="cpu.used" [available]="cpu.
-available">
-<metric-title>CPU</metric-title>
-<metric-description>utilization of CPU cores</metric-description>
-</app-metric>
-<app-metric class="col-sm-6" [used]="mem.used" [available]="mem.
-available">
-<metric-title>Memory</metric-title>
-<metric-description>utilization of memory in GB</metric-description>
-</app-metric>
-</div>
+    <div class="row">
+        <app-metric class="col-sm-6" [used]="cpu.used" [available]="cpu.available">
+            <metric-title>CPU</metric-title>
+            <metric-description>utilization of CPU cores</metric-description>
+        </app-metric>
+        <app-metric class="col-sm-6" [used]="mem.used" [available]="mem.available">
+            <metric-title>Memory</metric-title>
+            <metric-description>utilization of memory in GB</metric-description>
+        </app-metric>
+    </div>
 </div>
 ```
-As you can see here, we’ve replaced the title and description bindings with custom
-elements by the names we declared in our NgContent select attribute. The resulting
-UI appears the same, but it does put the elements in the insertion points as they are, so
-you could have nested more markup inside of the elements.
-Now if you run the code, you’ll get a compilation error from Angular. It will try to
-parse these new elements, recognize that they’re not registered components, and
-throw an error. We can fix that by setting some configuration in the App module that
-tells Angular not to get upset about finding an element it doesn’t understand.
-Open the src/app/app.module.ts file and make two small changes. The first is to
-import the NO_ERRORS_SCHEMA object from @angular/core:
-import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
-Then you’ll add a new property to the NgModule definition called schemas. Add it
-after the bootstrap property, as you see here:
+* As you can see here, we’ve replaced the title and description bindings with custom elements by the names we declared in our NgContent select attribute. The resulting UI appears the same, but it does put the elements in the insertion points as they are, so you could have nested more markup inside of the elements.
+* Now if you run the code, you’ll get a compilation error from Angular. It will try to parse these new elements, recognize that they’re not registered components, and throw an error. 
+* We can fix that by setting some configuration in the App module that tells Angular not to get upset about finding an element it doesn’t understand.
+* Open the **src/app/app.module.ts** file and make two small changes. The first is to import the **NO_ERRORS_SCHEMA** object from **@angular/core**; 
+
+    `import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';`
+* Then you’ll add a new property to the `NgModule` definition called schemas. 
+* Add it after the bootstrap property, as you see here:
+```typescript
 bootstrap: [AppComponent],
 schemas: [NO_ERRORS_SCHEMA]
 })
-
-Angular will now disable throwing errors on unknown elements and allow you to create
-content insertion points based on element names. Alternatively, you could have used
-other CSS selectors for a class or attribute and it wouldn’t have required this schema
-fix. I find elements to be more accessible and clearer in many cases, so I still recommend
-doing this. You only lose the error handling of unknown component names,
-which usually helps to catch typos in your markup.
-Content projection is powerful and quite useful for components that fit the role of
-display components. As you saw, you can use named or unnamed content insertion
-points to include markup provided into your component template, all by using the
-NgContent element.
-That wraps up the first chapter about components, and in the next chapter we’ll
-dig into more advanced topics, like how to optimize change detection and watch for
-changes in our inputs.
+```
+* Angular will now disable throwing errors on unknown elements and allow you to create content insertion points based on element names. Alternatively, you could have used other CSS selectors for a class or attribute and it wouldn’t have required this schema fix. 
+* I find elements to be more accessible and clearer in many cases, so I still recommend doing this. 
+* You only lose the error handling of unknown component names, which usually helps to catch typos in your markup.
+* Content projection is powerful and quite useful for components that fit the role of display components. As you saw, you can use named or unnamed content insertion points to include markup provided into your component template, all by using the `NgContent` element.
+* That wraps up the first chapter about components, and in the next chapter we’ll dig into more advanced topics, like how to optimize change detection and watch for changes in our inputs.
 
 ## Summary
-In this first chapter on components, you’ve learned a lot about the foundations of components
-and many useful ways they can be constructed for different purposes. Components
-are the building blocks of any Angular application, and every other feature of
-Angular stems from them in some way. We’ve covered
-¡ Components are self-contained elements that include a component class, a template
-implemented in HTML, and associated CSS that styles the component.
-¡ Components can play various roles inside an application. The roles are what I
-call app, display, data, and routing components. Although they’re not hard-andfast
-rules, it’s best to design your components to tackle a single set of tasks to keep
-them focused.
-¡ The @Component decorator has a number of configuration capabilities, and
-though you won’t likely use them all in the same component, you’ll certainly
-need to harness most of them at some point.
-¡ I talked about how to pass data into a component using input properties defined
-using the Input decorator or the inputs property. You also saw that input properties
-aren’t available in the component class’s constructor method, but are available
-in the NgOnInit component lifecycle event handler.
-¡ Components sometimes need to accept additional markup and display it inside
-the component called content projection. You saw how to use NgContent to insert
-external content into your component.
+* Components are the building blocks of any Angular application, and every other feature of Angular stems from them in some way. We’ve covered 
+* Components are self-contained elements that include a component class, a template implemented in `HTML`, and associated `CSS` that styles the component.
+* Components can play various roles inside an application. The roles are what I call app, display, data, and routing components. 
+* Although they’re not hard-andfast rules, it’s best to design your components to tackle a single set of tasks to keep them focused.
+* The `@Component` decorator has a number of configuration capabilities, and though you won’t likely use them all in the same component, you’ll certainly need to harness most of them at some point.
+* I talked about how to pass data into a component using input properties defined using the Input decorator or the inputs property. 
+* You also saw that input properties aren’t available in the component class’s constructor method, but are available in the `NgOnInit` component lifecycle event handler.
+* Components sometimes need to accept additional markup and display it inside the component called content projection. You saw how to use `NgContent` to insert external content into your component.
